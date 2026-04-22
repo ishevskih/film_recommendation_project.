@@ -1,0 +1,45 @@
+{% extends 'films/base.html' %}
+{% load static %}
+
+{% block title %}Мои оценки | Serendipity Cinema{% endblock %}
+
+{% block content %}
+<div class="my-ratings-container">
+    <div class="ratings-header">
+        <h1>📊 Мои оценки</h1>
+        <p>Вы оценили <strong>{{ ratings.count }}</strong> фильмов</p>
+        <a href="{% url 'home' %}" class="btn-back">← Вернуться к рекомендациям</a>
+    </div>
+    
+    {% if ratings %}
+    <div class="ratings-grid">
+        {% for rating in ratings %}
+        <div class="rating-card" onclick="window.location.href='/film/{{ rating.film.id }}/'">
+            <div class="rating-poster" style="--hue: {{ rating.hue }};">
+                <span class="poster-emoji">🎬</span>
+            </div>
+            <div class="rating-info">
+                <h3>{{ rating.film.title }}</h3>
+                <p class="rating-genres">{{ rating.film.genres|truncatewords:3 }}</p>
+                <div class="rating-value" data-rating="{{ rating.rating }}">
+                    {% if rating.rating >= 4.5 %}
+                        <span class="rating-badge excellent">★ {{ rating.rating }}/5</span>
+                    {% elif rating.rating >= 3.5 %}
+                        <span class="rating-badge good">★ {{ rating.rating }}/5</span>
+                    {% else %}
+                        <span class="rating-badge average">★ {{ rating.rating }}/5</span>
+                    {% endif %}
+                </div>
+                <p class="rating-date">{{ rating.timestamp|date:"d.m.Y H:i" }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-ratings">
+        <p>🎭 Вы пока не оценили ни одного фильма</p>
+        <a href="/admin/" class="btn-primary">Оценить фильмы</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

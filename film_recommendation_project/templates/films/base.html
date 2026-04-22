@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Serendipity Cinema{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loader-container">
+            <svg class="loader-svg" viewBox="0 0 100 100">
+                <defs>
+                    <filter id="shadow">
+                        <feDropShadow dx="0" dy="0" stdDeviation="1" flood-color="#e50914"/>
+                    </filter>
+                </defs>
+                <circle id="spinner" 
+                        style="fill:transparent; stroke:#e50914; stroke-width: 8px; stroke-linecap: round; filter:url(#shadow);" 
+                        cx="50" cy="50" r="42"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Animated Blob Background -->
+    <div class="blob-background">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="blob blob-5"></div>
+        <div class="blob blob-6"></div>
+    </div>
+
+    <!-- Навигация (всегда тёмная) -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="logo">
+                <span class="logo-text">Serendipity Cinema</span>
+            </a>
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <span class="user-info">👤 {{ user.username }}</span>
+                    <button class="nav-login-btn" onclick="logoutUser()">Выйти</button>
+                {% else %}
+                    <button class="nav-login-btn" onclick="openAuthModal()">Войти</button>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 Serendipity Cinema — Умные рекомендации фильмов</p>
+    </footer>
+
+    <!-- Модальное окно входа/регистрации -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" onclick="closeAuthModal()">&times;</button>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Вход</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+            </div>
+            
+            <!-- Форма входа -->
+            <div id="loginForm" class="auth-form">
+                <h2>С возвращением</h2>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginUsername">Имя пользователя</label>
+                        <input type="text" id="loginUsername" placeholder="Введите имя пользователя" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль</label>
+                        <input type="password" id="loginPassword" placeholder="Введите пароль" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Войти</button>
+                </form>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <h2>Создать аккаунт</h2>
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="regUsername">Имя пользователя</label>
+                        <input type="text" id="regUsername" placeholder="Придумайте имя пользователя" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regEmail">Email</label>
+                        <input type="email" id="regEmail" placeholder="your@email.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regPassword">Пароль</label>
+                        <input type="password" id="regPassword" placeholder="Минимум 8 символов" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="regPasswordConfirm">Подтвердите пароль</label>
+                        <input type="password" id="regPasswordConfirm" placeholder="Повторите пароль" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+
+    <!-- Скрипты модального окна и загрузки -->
+    <script>
+    // === LOADING SCREEN ===
+    window.addEventListener('load', function() {
+        const loadingScreen = document.getElementById('loadingScreen');
+        
+        // Скрываем загрузку через 2.5 секунды
+        setTimeout(() => {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }, 2500);
+    });
+
+    // === МОДАЛЬНОЕ ОКНО ===
+    function openAuthModal() {
+        document.getElementById('authModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    function switchAuthTab(tab) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const tabs = document.querySelectorAll('.auth-tab');
+        
+        if (tab === 'login') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            tabs[0].classList.add('active');
+            tabs[1].classList.remove('active');
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            tabs[0].classList.remove('active');
+            tabs[1].classList.add('active');
+        }
+    }
+
+    document.getElementById('authModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAuthModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAuthModal();
+        }
+    });
+
+    function logoutUser() {
+        if (confirm('Выйти из аккаунта?')) {
+            window.location.href = '/admin/logout/';
+        }
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        const btn = e.target.querySelector('.btn-submit');
+        const originalText = btn.textContent;
+        btn.textContent = 'Входим...';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+            alert('Это демонстрационная форма. Для реального входа используйте админку: /admin/');
+            btn.textContent = originalText;
+            btn.disabled = false;
+            closeAuthModal();
+        }, 1000);
+    }
+
+    function handleRegister(e) {
+        e.preventDefault();
+        const username = document.getElementById('regUsername').value;
+        const email = document.getElementById('regEmail').value;
+        
+        alert(`Спасибо, ${username}! Это демонстрационная форма.\nДля создания аккаунта используйте админку: /admin/`);
+        closeAuthModal();
+    }
+    </script>
+</body>
+</html>
